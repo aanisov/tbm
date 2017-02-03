@@ -20,7 +20,7 @@
 #define xstr(s) str(s)
 #define str(s) #s
 
-#define VIRT_TIMER_IRQ (16 + 11)
+#define PHYS_TIMER_IRQ (29)
 
 static const char arch_str[] = xstr(__BOARD__) "-" xstr(__UNIT__);
 
@@ -95,9 +95,9 @@ void update_stats(uint64_t latency)
 static inline void timer_rearm(uint64_t delay)
 {
         counter += delay;
-        a64_write_timer_cval(TIMER_VIRT, counter);
+        a64_write_timer_cval(TIMER_PHYS, counter);
 	ibarrier();
-        a64_write_timer_ctl(TIMER_VIRT, T_ENABLE);
+        a64_write_timer_ctl(TIMER_PHYS, T_ENABLE);
 	ibarrier();
 }
 
@@ -112,12 +112,12 @@ static void timer_irq_h(struct excp_frame *f)
 	ibarrier();
 
 	r = readl(GIC_CPU_BASE + GICC_IAR);
-        a64_write_timer_ctl(TIMER_VIRT, T_MASK);
+        a64_write_timer_ctl(TIMER_PHYS, T_MASK);
 
-	if (r != VIRT_TIMER_IRQ) {
+	if (r != PHYS_TIMER_IRQ) {
 		printf("r=%d\n", r);
 	}
-	assert(r == VIRT_TIMER_IRQ);
+	assert(r == PHYS_TIMER_IRQ);
 	/* Disable the timer while we reprogram it.  */
 
 	diff = now - counter;
@@ -137,9 +137,9 @@ void app_run(void)
 	local_cpu_di();
 
 	/* Setup the GIC.  */
-	gicd_set_irq_group(GIC_DIST_BASE, VIRT_TIMER_IRQ, 0);
-	gicd_set_irq_target(GIC_DIST_BASE, VIRT_TIMER_IRQ, 0);
-	gicd_enable_irq(GIC_DIST_BASE, VIRT_TIMER_IRQ);
+	gicd_set_irq_group(GIC_DIST_BASE, PHYS_TIMER_IRQ, 0);
+	gicd_set_irq_target(GIC_DIST_BASE, PHYS_TIMER_IRQ, 0);
+	gicd_enable_irq(GIC_DIST_BASE, PHYS_TIMER_IRQ);
 
 	writel(GIC_DIST_BASE + GICD_CTRL, 3);
 	writel(GIC_CPU_BASE + GICC_CTRL, 3);
@@ -153,10 +153,10 @@ void app_run(void)
 	freq_k = (1000 * 1000 * 1000ULL) / freq;
 
 	/* Enable the timer.  */
-	counter = a64_read_timer_cnt(TIMER_VIRT);
-        a64_write_timer_tval(TIMER_VIRT, 0);
+	counter = a64_read_timer_cnt(TIMER_PHYS);
+        a64_write_timer_tval(TIMER_PHYS, 0);
 	timer_rearm(freq);
-        a64_write_timer_ctl(TIMER_VIRT, T_ENABLE);
+        a64_write_timer_ctl(TIMER_PHYS, T_ENABLE);
 	ibarrier();
 
 	local_cpu_ei();

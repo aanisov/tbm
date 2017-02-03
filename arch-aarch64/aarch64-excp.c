@@ -147,7 +147,7 @@ void aarch64_irq(struct excp_frame *f)
 	 * from happening before aarch64_irq. Even without it, it
 	 * would spectacular if the CPU could speculatively take
 	 * an interrupt.  */
-	aarch64_mrs(t, "cntvct_el0");
+	aarch64_mrs(t, "cntpct_el0");
 	__asm__ __volatile__ ("isb");
 	el = aarch64_current_el();
 
