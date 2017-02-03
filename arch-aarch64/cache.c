@@ -36,7 +36,6 @@ void a64_dcache_invalidate(struct aarch64_cache_descr *cd, bool flush)
 			break;
 		default:
 			printf("ways=%d\n", cd->level[i].D.ways);
-			assert(0);
 		}
 
 
