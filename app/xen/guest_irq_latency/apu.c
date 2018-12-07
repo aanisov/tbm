@@ -20,7 +20,7 @@
 #define xstr(s) str(s)
 #define str(s) #s
 
-#define PHYS_TIMER_IRQ (29)
+#define PHYS_TIMER_IRQ (30)
 
 static const char arch_str[] = xstr(__BOARD__) "-" xstr(__UNIT__);
 
