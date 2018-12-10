@@ -161,9 +161,9 @@ void app_run(void)
 
 	local_cpu_ei();
         do {
-		if (0)
+//		if (0)
 			cpu_wfi();
-		cpu_relax();
+//		cpu_relax();
         } while (1);
 
 	printf("Done\n");
