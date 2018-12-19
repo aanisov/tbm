@@ -11,6 +11,13 @@ static inline void writeb(phys_addr_t paddr, unsigned char v)
 	*p = v;
 }
 
+static inline void writew(phys_addr_t paddr, unsigned short v)
+{
+	unsigned short *p = (void *) paddr;
+	barrier();
+	*p = v;
+}
+
 static inline void writel(phys_addr_t paddr, unsigned int v)
 {
 	unsigned int *p = (void *) paddr;
@@ -22,6 +29,16 @@ static inline unsigned char readb(phys_addr_t paddr)
 {
 	const unsigned char *p = (void *) paddr;
 	unsigned char v;
+
+	barrier();
+	v = *p;
+	return v;
+}
+
+static inline unsigned short readw(phys_addr_t paddr)
+{
+	const unsigned short *p = (void *) paddr;
+	unsigned short v;
 
 	barrier();
 	v = *p;

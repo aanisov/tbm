@@ -41,10 +41,10 @@ static void plat_setup_mmu(unsigned int el)
 	/* Xen RAM at 0x40000000  */
 	aarch64_mmu_map(&mmu, 1ULL << 30, 1ULL << 30, MAPSIZE_1G, PROT_RWE,
 			MAIR_IDX_MEM, MAP_SECURE);
-	aarch64_mmu_map(&mmu, 2ULL << 30, 2ULL << 30, MAPSIZE_1G, PROT_RW,
-			MAIR_IDX_MEM, MAP_SECURE);
-	aarch64_mmu_map(&mmu, 3ULL << 30, 2ULL << 30, MAPSIZE_1G, PROT_RW,
-			MAIR_IDX_MEM, MAP_SECURE);
+	aarch64_mmu_map(&mmu, 2ULL << 30, 2ULL << 30, MAPSIZE_1G, PROT_RWE,
+			MAIR_IDX_DEVICE, MAP_SECURE);
+	aarch64_mmu_map(&mmu, 3ULL << 30, 3ULL << 30, MAPSIZE_1G, PROT_RWE,
+			MAIR_IDX_DEVICE, MAP_SECURE);
 
 
 	/* Invalidate caches before enabling them.  */
@@ -81,7 +81,7 @@ void plat_init_a64(void)
 {
 	const unsigned int current_el = aarch64_current_el();
 
-	printf("%s\n", __func__);
+	printf("%s, el %d\n", __func__, current_el);
 	plat_setup_mmu(current_el);
 }
 
