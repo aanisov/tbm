@@ -31,12 +31,14 @@ static unsigned int el;
 
 struct {
 	int64_t avg;			/* Moving average k=0.125  */
+    uint64_t sum;
 	uint64_t max_latency;
 	uint64_t min_latency;
 	uint64_t max_warm_latency;	/* Max seen after initial warmup runs.  */
 	uint64_t rounds;
 } st = {
 	.avg = 0,
+    .sum = 0,
 	.max_latency = 0,
 	.max_warm_latency = 0,
 	.min_latency = -1LL,
@@ -46,8 +48,8 @@ struct {
 
 void show_stats(void)
 {
-	printf("latency (ns): max=%lld warm_max=%lld min=%lld avg=%lld\n",
-		st.max_latency, st.max_warm_latency, st.min_latency, st.avg);
+	printf("tbm: max=%lld warm_max=%lld min=%lld mavg=%lld tavg=%lld\n",
+		st.max_latency, st.max_warm_latency, st.min_latency, st.avg, st.sum/st.rounds);
 }
 
 void update_stats(uint64_t latency)
@@ -57,6 +59,7 @@ void update_stats(uint64_t latency)
 	int64_t prev_avg = st.avg;
 
 	st.rounds++;
+    st.sum += latency;
 
 //	printf("latency=%llu ns\n", latency);
 	if (latency > st.max_latency) {
