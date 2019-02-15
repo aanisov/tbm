@@ -45,6 +45,51 @@ struct {
 	.rounds = 0,
 };
 
+struct vcpu_runstate_info {
+	/* VCPU's current state (RUNSTATE_*). */
+	int		 state;
+	/* When was current state entered (system time, ns)? */
+	uint64_t state_entry_time;
+	/*
+	 * Update indicator set in state_entry_time:
+	 * When activated via VMASST_TYPE_runstate_update_flag, set during
+	 * updates in guest memory mapped copy of vcpu_runstate_info.
+	 */
+	uint64_t time[4];
+} xen_runstate;
+
+/*
+ * Register a shared memory area from which the guest may obtain its own
+ * runstate information without needing to execute a hypercall.
+ * Notes:
+ *	1. The registered address may be virtual or physical, depending on the
+ *	   platform. The virtual address should be registered on x86 systems.
+ *	2. Only one shared area may be registered per VCPU. The shared area is
+ *	   updated by the hypervisor each time the VCPU is scheduled. Thus
+ *	   runstate.state will always be RUNSTATE_running and
+ *	   runstate.state_entry_time will indicate the system time at which the
+ *	   VCPU was last scheduled to run.
+ * @extra_arg == pointer to vcpu_register_runstate_memory_area structure.
+ */
+#define VCPUOP_register_runstate_memory_area 5
+struct vcpu_register_runstate_memory_area {
+		union {
+				struct vcpu_runstate_info *v;
+				uint64_t p;
+		} addr;
+};
+
+extern int HYPERVISOR_vcpu_op(int cmd, int vcpuid, void *extra_args);
+
+void xen_setup_runstate_info()
+{
+	struct vcpu_register_runstate_memory_area area;
+
+	area.addr.v = &xen_runstate;
+
+	HYPERVISOR_vcpu_op(VCPUOP_register_runstate_memory_area, 0, &area);
+};
+
 
 void show_stats(void)
 {
@@ -133,6 +178,7 @@ static void timer_irq_h(struct excp_frame *f)
 
 void app_run(void)
 {
+	xen_setup_runstate_info();
 	el = aarch64_current_el();
 	aarch64_set_irq_h(timer_irq_h);
 

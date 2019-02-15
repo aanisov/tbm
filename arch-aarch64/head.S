@@ -141,6 +141,15 @@ _secondary_entry_head:
 
 	bl	secondary_entry
 
+#define XEN_IMM                 0xEA1
+#define __HYPERVISOR_vcpu_op    24
+
+.global HYPERVISOR_vcpu_op
+HYPERVISOR_vcpu_op:
+	mov x16, #__HYPERVISOR_vcpu_op
+	hvc XEN_IMM
+	ret
+
 	.global	tbm_fdt
 	.section .bss
 tbm_fdt:
